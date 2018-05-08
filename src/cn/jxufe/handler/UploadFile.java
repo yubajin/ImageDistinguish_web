@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -65,6 +66,8 @@ public class UploadFile extends HttpServlet{
 		upload.setProgressListener(new ProgressListener() {
 		    public void update(long pBytesRead, long pContentLength, int arg2) {
 		        System.out.println("文件大小为：" + pContentLength + ",当前已处理：" + pBytesRead);
+		        ServletContext servletContext = request.getServletContext();
+		        servletContext.setAttribute("pContentLength:", pContentLength);
 		    }
 		});
 		

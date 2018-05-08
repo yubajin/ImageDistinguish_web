@@ -14,7 +14,7 @@
 	<body onload="init()">
 		<div data-role="page" id="page">
 			<div data-role="main" class="ui-content" id="main">
-				<div class="ui-input-text ui-shadow-inset ui-corner-all ui-btn-shadow ui-body-c">
+				<div>
 					<form id="uploadForm" method="post" enctype="multipart/form-data">
 						<input type="file" id = "myfile1" name="myfile"><br>
 						<input type="button" id="uploadbutton" value="上传">
@@ -24,28 +24,52 @@
 		</div>
 		  
 		<script type="text/javascript">
-			function requestLoadJS(rs_url) {
+			function init() {
+				upload();
+			}
+			function upload() {
+				var uploadbutton = $("#uploadbutton");
+				uploadbutton.bind("click", requestUpload)
+			}
+	
+			function requestUpload() {
 				$.ajax({
 					type : "POST",
-					url : "${pageContext.request.contextPath }/GetResourceFromWF",
-					data : {
-						"url" : rs_url,
-					},
-					success : function(data) {
-						console.log("data:" + data);
-	
-						var js_element = document.createElement("script");
-						js_element.setAttribute("type", "text/javascript");
-						js_element.innerHTML = data;
-						document.getElementsByTagName("head")[0].appendChild(js_element);
-					}
+					url : "/ImageDistinguish_web/uploadfile",
+					data : new FormData($('#uploadForm')[0]),
+					processData : false,
+					contentType : false,
+					async : false,
+					cache : false, // 不缓存
+					success : successUploadFunc
 				});
 			}
-			function init(){
-				var rs_url = "/js/upload.js";
-				requestLoadJS(rs_url);
+	
+			function successUploadFunc(data) {
+				var json = eval(data);
+				$.each(json, function(index) {
+					var log_id = json[index].log_id;
+					var words_results = json[index].words_result;
+					var words_result_num = json[index].words_result_num;
+					
+					clearWordList();
+					$("#main").append('<p>识别结果如下：</p>');
+					var word_result_obj = eval(words_results);
+					$.each(word_result_obj, function(index) {
+						var words_result = word_result_obj[index].words;
+						addWordsList(words_result);
+					});
+				});
 			}
-			
+	
+			function addWordsList(words_result) {
+				$("#main").append('<p>' + words_result + '</p>');
+	
+			}
+	
+			function clearWordList(){
+				$("#main p").remove();
+			}
 		</script>
 	</body>
 </html>
