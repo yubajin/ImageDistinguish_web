@@ -1,6 +1,8 @@
 package cn.jxufe.handler;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
@@ -55,7 +57,8 @@ public class UploadFile extends HttpServlet{
 			return;
 		}
 		
-		System.out.println("访问ip为:" + request.getRemoteAddr());
+		String ip = request.getRemoteAddr();
+		System.out.println("访问ip为:" + ip);
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		
 		factory.setSizeThreshold(MEMORY_THRESHOLD);
@@ -75,14 +78,22 @@ public class UploadFile extends HttpServlet{
 		upload.setSizeMax(MAX_REQUEST_SIZE);
 		upload.setHeaderEncoding("UTF-8");
 		
-		//File.separator分割符
 		String basePath = getServletContext().getRealPath("/") + "upload" ;
-//		uploadPath = uploadPath.replace("\\", "/");
 		
 		File uploadDir = new File(basePath);
 		if(!uploadDir.exists()){
 			uploadDir.mkdir();
 		}
+		
+		String logDirStr = getServletContext().getRealPath("/") + "logfile" ;
+		
+		File logDir = new File(logDirStr);
+		if(!logDir.exists()){
+			logDir.mkdir();
+		}
+		
+		File logfile = new File(logDir.getAbsolutePath()+"/log.txt");
+		
 		
 		//解析内容
 		try {
@@ -100,6 +111,47 @@ public class UploadFile extends HttpServlet{
 						
 						String finalFilePath = filePath + File.separator + fileName;
 						System.out.println("文件存储绝对路径:" + finalFilePath);
+						
+						/**
+						 * 记录日志
+						 */
+
+						/*****************************************************************************/
+						FileWriter fw = null;
+						BufferedWriter writer = null;
+						
+						try {
+							fw = new FileWriter(logfile,true);
+							writer = new BufferedWriter(fw);
+							
+							String data = new Date().toString();
+							
+							String format_ip = String.format("%-10s", ip);
+							String format_data = String.format("%-20s", data);
+							String format_img_url = String.format("%-200s", finalFilePath);
+							
+							
+							writer.write(format_ip);
+							writer.newLine();
+							writer.write(format_data);
+							writer.newLine();
+							writer.write(format_img_url);
+							writer.newLine();
+							writer.newLine();
+							writer.flush();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}finally {
+							try {
+								writer.close();
+								fw.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+						/*****************************************************************************/
+						
+						
 						File storeFile = new File(finalFilePath);
 						
 						try {
@@ -110,9 +162,9 @@ public class UploadFile extends HttpServlet{
 							response.setContentType("application/json;charset=utf-8");
 							response.setCharacterEncoding("utf-8");
 							
-							PrintWriter writer = response.getWriter();
+							PrintWriter outer = response.getWriter();
 							System.out.println("识别结果:" + result);
-							writer.write("[" + result + "]");
+							outer.write("[" + result + "]");
 							
 //							
 //							response.setContentType("text/html;charset=UTF-8");
