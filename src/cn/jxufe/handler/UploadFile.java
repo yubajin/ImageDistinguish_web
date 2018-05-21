@@ -49,16 +49,64 @@ public class UploadFile extends HttpServlet{
 
 		request.setCharacterEncoding("UTF-8");
 		response.setCharacterEncoding("UTF-8");
+		/*****************************************************************************/
+
+		String ip = request.getRemoteAddr();
+		String logDirStr = getServletContext().getRealPath("/") + "logfile" ;
+		
+		File logDir = new File(logDirStr);
+		if(!logDir.exists()){
+			logDir.mkdir();
+		}
+		
+		File logfile = new File(logDir.getAbsolutePath()+"/log.txt");
+		
+		FileWriter fw = null;
+		BufferedWriter writer = null;
 		
 		if(!ServletFileUpload.isMultipartContent(request)){
-			PrintWriter writer = response.getWriter();
-			writer.println("Error:表单必须包含enctype = multipart/form-data");
-			writer.flush();
+			System.out.println("不是包含enctype = multipart/form-data的表单请求");
+			System.out.println("访问ip为:"+ip);
+
+			try {
+				fw = new FileWriter(logfile,true);
+				writer = new BufferedWriter(fw);
+				
+				String ip_date = new Date().toString();
+				
+				String format_ip = String.format("%-10s", ip);
+				String ip_format_date = String.format("%-20s", ip_date);
+				
+				writer.write("----------------------------------访问的ip和时间----------------------------------");
+				writer.newLine();
+				writer.write(format_ip);
+				writer.newLine();
+				writer.write(ip_format_date);
+				writer.newLine();
+				writer.write("----------------------------------访问的ip和时间----------------------------------");
+				writer.newLine();
+				writer.flush();
+				
+				PrintWriter out = response.getWriter();
+				out.write(format_ip);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}finally {
+				try {
+					writer.close();
+					fw.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 			return;
 		}
 		
-		String ip = request.getRemoteAddr();
-		System.out.println("访问ip为:" + ip);
+		
+		
+		
+		/*****************************************************************************/
+		
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		
 		factory.setSizeThreshold(MEMORY_THRESHOLD);
@@ -70,7 +118,8 @@ public class UploadFile extends HttpServlet{
 		    public void update(long pBytesRead, long pContentLength, int arg2) {
 		        System.out.println("文件大小为：" + pContentLength + ",当前已处理：" + pBytesRead);
 		        ServletContext servletContext = request.getServletContext();
-		        servletContext.setAttribute("pContentLength:", pContentLength);
+		        servletContext.setAttribute("pContentLength", pContentLength);
+		        servletContext.setAttribute("pBytesRead", pBytesRead);
 		    }
 		});
 		
@@ -84,16 +133,6 @@ public class UploadFile extends HttpServlet{
 		if(!uploadDir.exists()){
 			uploadDir.mkdir();
 		}
-		
-		String logDirStr = getServletContext().getRealPath("/") + "logfile" ;
-		
-		File logDir = new File(logDirStr);
-		if(!logDir.exists()){
-			logDir.mkdir();
-		}
-		
-		File logfile = new File(logDir.getAbsolutePath()+"/log.txt");
-		
 		
 		//解析内容
 		try {
@@ -117,25 +156,22 @@ public class UploadFile extends HttpServlet{
 						 */
 
 						/*****************************************************************************/
-						FileWriter fw = null;
-						BufferedWriter writer = null;
 						
 						try {
 							fw = new FileWriter(logfile,true);
 							writer = new BufferedWriter(fw);
 							
-							String data = new Date().toString();
+							String upload_date = new Date().toString();
 							
-							String format_ip = String.format("%-10s", ip);
-							String format_data = String.format("%-20s", data);
 							String format_img_url = String.format("%-200s", finalFilePath);
+							String upload_format_date = String.format("%-20s", upload_date);
 							
-							
-							writer.write(format_ip);
-							writer.newLine();
-							writer.write(format_data);
+							writer.write("----------------------------------上传文件的路径和时间----------------------------------");
 							writer.newLine();
 							writer.write(format_img_url);
+							writer.newLine();
+							writer.write(upload_format_date);
+							writer.newLine();writer.write("----------------------------------上传文件的路径和时间----------------------------------");
 							writer.newLine();
 							writer.newLine();
 							writer.flush();

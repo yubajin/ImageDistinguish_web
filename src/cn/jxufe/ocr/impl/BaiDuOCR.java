@@ -18,7 +18,7 @@ public class BaiDuOCR implements OCR{
     private static final String SECRET_KEY = "YgfVD1mikkYoGn9MaPz9KjvV6ppLQcFA";
     private static final AipOcr CLIENT=new AipOcr(APP_ID, API_KEY, SECRET_KEY);
     public BaiDuOCR(){
-        CLIENT.setConnectionTimeoutInMillis(2000);
+        CLIENT.setConnectionTimeoutInMillis(4000);
         CLIENT.setSocketTimeoutInMillis(60000);
         System.out.println("欢迎您使用百度OCR进行文字识别");
     }
@@ -34,8 +34,8 @@ public class BaiDuOCR implements OCR{
 
     public static void main(String[] args) {
         OCR ocr=new BaiDuOCR();
-//        String path = "Photo\\test1.png";
-        String path = "C:\\Users\\Administrator\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp1\\wtpwebapps\\ImageDistinguish_web\\WEB-INF\\upload\\test1.png";
+        String path = "Photo\\test1.png";
+//        String path = "C:\\Users\\Administrator\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp1\\wtpwebapps\\ImageDistinguish_web\\WEB-INF\\upload\\test1.png";
         String result=ocr.getOCR(new File(path));
         System.out.println("图片识别结果:\n" + result);
     }
